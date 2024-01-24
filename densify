@@ -23,10 +23,12 @@ import queue
 import os
 import re
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject
 from gi.overrides import GLib
 import pathlib
+
 
 class MyWindow(Gtk.Window, threading.Thread):
 
@@ -46,9 +48,9 @@ class MyWindow(Gtk.Window, threading.Thread):
         resolution_string, junk = p2.communicate()
         resolution = resolution_string.split()[0]
         rstring = str(resolution)
-        rstring = rstring[1:] # Remove "b" from string
-        rstring = rstring[1:] # Remove "'" from beginning of string
-        rstring = rstring[:-1] # Remove "'" from end of string
+        rstring = rstring[1:]  # Remove "b" from string
+        rstring = rstring[1:]  # Remove "'" from beginning of string
+        rstring = rstring[:-1]  # Remove "'" from end of string
         w, h = rstring.split("x")
         height = int(h)
         if height < 800:
@@ -57,7 +59,7 @@ class MyWindow(Gtk.Window, threading.Thread):
             window_height = 450
 
         # Set Window Specification
-        Gtk.Window.__init__(self, title="Densify - PDF Compression")
+        Gtk.Window.__init__(self, title="Pdfttiki")
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_default_size(window_height, 300)
         self.set_resizable(True)
@@ -71,8 +73,9 @@ class MyWindow(Gtk.Window, threading.Thread):
             self.box.pack_start(self.image, True, True, padding=1)
 
         # App About
-        aLabel = Gtk.Label(label="An Open Source Initiative Sponsored by 3DF")
-        aLabel.set_markup("<small>An <a href=\"https://osi.3df.io\"" "title=\"OSI @ 3DF\">OSI</a> application sponsored by <a href=\"https://3df.io\"" "title=\"3DF Ltd.\">3DF</a></small>")
+        aLabel = Gtk.Label(label="Pdfttiki - Pasaiako Udala. 3DF -ren lanean oinarritua")
+        aLabel.set_markup(
+            "<small>Pdfttiki - Pasaiako Udala. <a href=\"https://osi.3df.io\"" "title=\"OSI @ 3DF\">3DF</a> -ren lanean oinarritua</small>")
         self.box.pack_start(aLabel, True, True, 0)
 
         # App Version
@@ -95,14 +98,14 @@ class MyWindow(Gtk.Window, threading.Thread):
         self.box.pack_start(bar1, True, True, 0)
 
         # Specify Compression Type
-        tLabel = Gtk.Label(label="Type:", xalign=0)
+        tLabel = Gtk.Label(label="Mota:", xalign=0)
         self.box.pack_start(tLabel, True, True, 0)
         store = Gtk.ListStore(str)
         for item in ["ebook", "screen", "printer", "prepress", "default"]:
             store.append([item])
         self.cType = Gtk.ComboBox()
         self.cType.set_model(store)
-        self.cType.set_active(0)
+        self.cType.set_active(1)
         self.cType.connect("changed", self.on_combobox_changed)
         self.box.pack_start(self.cType, True, True, 0)
         cellrenderertext = Gtk.CellRendererText()
@@ -119,10 +122,10 @@ class MyWindow(Gtk.Window, threading.Thread):
         self.box.pack_start(bar2, True, True, 0)
 
         # Specify Output File
-        oLabel = Gtk.Label(label="Output:", xalign=0)
+        oLabel = Gtk.Label(label="Irteera:", xalign=0)
         self.box.pack_start(oLabel, True, True, 0)
         self.oFile = Gtk.Entry()
-        self.oFile.set_placeholder_text("compressed.pdf")
+        self.oFile.set_placeholder_text("konprimitua.pdf")
         self.box.pack_start(self.oFile, True, True, 0)
 
         # Help Button - Output File
@@ -135,12 +138,12 @@ class MyWindow(Gtk.Window, threading.Thread):
         self.box.pack_start(bar3, True, True, 0)
 
         # Progress Bar
-        pLabel = Gtk.Label(label="Status:", xalign=0)
+        pLabel = Gtk.Label(label="Egoera:", xalign=0)
         self.box.pack_start(pLabel, True, True, 0)
         self.progressbar = Gtk.ProgressBar()
         self.box.pack_start(self.progressbar, True, True, 1)
         show_text = True
-        text = "Ready"
+        text = "Prest"
         self.progressbar.set_text(text)
         self.progressbar.set_show_text(show_text)
         self.timeout_id = GLib.timeout_add(50, self.on_timeout, None)
@@ -151,7 +154,7 @@ class MyWindow(Gtk.Window, threading.Thread):
         self.box.pack_start(bar4, True, True, 0)
 
         # Toggle Compress
-        self.button = Gtk.Button(label="Compress Now!")
+        self.button = Gtk.Button(label="ttikitu!")
         self.button.set_sensitive(True)
         self.button.connect("clicked", self.on_button_clicked)
         self.box.pack_start(self.button, True, True, 0)
@@ -164,14 +167,14 @@ class MyWindow(Gtk.Window, threading.Thread):
     # Help Button Handler
     def on_help_clicked(self, widget):
         # Show Compression Type Descriptions Help Dialog
-        verbiage = "\n\n\nscreen:\n\nselects low-resolution output similar to the Acrobat Distiller \"Screen Optimized\" setting.\n\n\nebook:\n\nselects medium-resolution output similar to the Acrobat Distiller \"eBook\" setting.\n\n\nprinter:\n\nselects output similar to the Acrobat Distiller \"Print Optimized\" setting.\n\n\nprepress:\n\nselects output similar to Acrobat Distiller \"Prepress Optimized\" setting.\n\n\ndefault:\n\nselects output intended to be useful across a wide variety of uses, possibly at the expense of a larger output file."
-        self.info("Types of Compression", verbiage)
+        verbiage = "\n\n\nscreen:\n\nkalitate apalagoa, tamaina txikiagoa (72 ppp).\n\n\nebook:\n\nkalitate hobea, tamaina handiagoa (150 ppp).\n\n\nprinter:\n\nAcrobat Distiller-en 'Inprimatze optimizatua' doikuntza bezalakoa (300 ppp).\n\n\nprepress:\n\nAcrobat Distiller-en 'Prepress Optimized' doiketa bezala (300 ppp).\n\n\ndefault:\n\nemaitzak hautatzen ditu askotariko erabileretan erabilgarriak izan daitezen, ziurrenik irteera-fitxategi handiago baten kontura.."
+        self.info("Konpresio motak", verbiage)
 
     # oHelp Button Handler
     def on_oHelp_clicked(self, widget):
         # Show Output File Help Dialog
-        verbiage = "The output filename must not be the same as the input file name. The compressed PDF file will be placed in the same folder as your input file folder."
-        self.info("Output File Name", verbiage)
+        verbiage = "Irteera-fitxategiaren izenak ez du sarrera-fitxategiaren izen bera izan behar. PDF fitxategi konprimitua sarrerako fitxategiko karpeta berean jarriko da."
+        self.info("Irteera fitxategia", verbiage)
 
     # Compression Button Handler - Where all the magic happens
     def on_button_clicked(self, widget):
@@ -187,12 +190,12 @@ class MyWindow(Gtk.Window, threading.Thread):
 
         # If Output file name was not specified, use "compressed.pdf"
         if oName == None or oName == "":
-            oName = "compressed.pdf"
+            oName = "konprimitua.pdf"
 
         # If Input file is not specified, show an error dialog box
         if iFile == None:
             # Show Error Dialog
-            verbiage = "The input file field is empty. Please specify an input file to compress..."
+            verbiage = "Sarrera-fitxategiaren eremua hutsik dago. Zehaztu konprimitzeko sarrera-fitxategi bat..."
             self.warning("ERROR!", verbiage)
             # Set Progress Bar Text to "Ready"
             self.ready()
@@ -204,7 +207,7 @@ class MyWindow(Gtk.Window, threading.Thread):
         # If Input file does not end with .pdf, show an error dialog box
         if not iFile.endswith(".pdf"):
             # Show Error Dialog
-            verbiage = "Only PDF files can be compressed with this application. Please specify a pdf file"
+            verbiage = "PDF fitxategiak bakarrik konprimi daitezke aplikazio honekin. Mesedez, zehaztu pdf fitxategi bat"
             self.warning("ERROR!", verbiage)
             # Set Progress Bar Text to "Ready"
             self.ready()
@@ -221,7 +224,7 @@ class MyWindow(Gtk.Window, threading.Thread):
         # If the Input File and Output File are the same, show an error dialog box
         if iFile == oFile:
             # Show Error Dialog
-            verbiage = "The output file name cannot be the same as the input file name."
+            verbiage = "Irteera-fitxategiaren izena ezin da sarrera-fitxategiaren izen bera izan."
             self.warning("ERROR!", verbiage)
             # Set Progress Bar Text to "Ready"
             self.ready()
@@ -232,8 +235,8 @@ class MyWindow(Gtk.Window, threading.Thread):
 
         # If Output File does not end with .pdf, verify with user that's really what they want
         if not oFile.endswith(".pdf"):
-            verbiage = "The output file name you specified does not end with \".pdf\". Are you sure that's what you want?"
-            response = self.verify("Output file name does not end with \".pdf\"!", verbiage)
+            verbiage = "Zehaztu duzun irteera-fitxategiaren izena ez da amaitzen \".pdf\". Ziur al daude hori nahi duzula?"
+            response = self.verify("Irteera-fitxategiaren izena ez da amaitzen \".pdf\"!", verbiage)
 
             # If OK, then continue to overwrite existing file. If cancel, then stop and go back to main window
             if response == Gtk.ResponseType.CANCEL:
@@ -249,8 +252,8 @@ class MyWindow(Gtk.Window, threading.Thread):
         # If Specified Input File Name Contains Unsupported Characters, Show Dialog Error Dialog Box and Return to Main Window
         # Security Procaution
         if re.search('[\\\\\|:;\`]', iName):
-            verbiage = "The input file name contains unsupported characters. Please ensure your input file name does not contain special characters / \\ : ; \`"
-            self.warning("Unsupported File Name Convention!", verbiage)
+            verbiage = "Sarrera-fitxategiaren izenak karaktere bateraezinak ditu. Mesedez, ziurtatu zure sarrera-fitxategiaren izenak ez duela karaktere berezirik / \\ : ; \`"
+            self.warning("Izenaren formatua ez da zuzena!", verbiage)
             self.button.set_sensitive(True)
 
             return 1
@@ -258,8 +261,8 @@ class MyWindow(Gtk.Window, threading.Thread):
         # If Specified Output File Name Contains Unsupported Characters, Show Dialog Error Dialog Box and Return to Main Window
         # Security Procaution
         if re.search('[\\\\\|:;\`]', oName):
-            verbiage = "The output file name contains unsupported characters. Please ensure your output file name does not contain special characters / \\ : ; \`"
-            self.warning("Unsupported File Name Convention!", verbiage)
+            verbiage = "Irteera-fitxategiaren izenak karaktere bateraezinak ditu. Mesedez, ziurtatu zure irteera-fitxategiaren izenak ez duela karaktere berezirik / \\ : ; \`"
+            self.warning("Izenaren formatua ez da zuzena!", verbiage)
             self.button.set_sensitive(True)
 
             return 1
@@ -267,8 +270,8 @@ class MyWindow(Gtk.Window, threading.Thread):
         # If Specified Output File Name Matches a File in the Output Directory
         if os.path.isfile(oFile):
             # Show Error Dialog
-            verbiage = "There's a file with the same name, \"" + oFile + "\" already in the directory. Are you sure you want to overwrite?"
-            response = self.verify("WARNING!", verbiage)
+            verbiage = "Izen bereko fitxategi bat, \"" + oFile + "\", dagoeneko direktorioan dago. Ziur zaude gainidatzi nahi duzula?"
+            response = self.verify("ADI!", verbiage)
 
             # If OK, then continue to overwrite existing file. If cancel, then stop and go back to main window
             if response == Gtk.ResponseType.CANCEL:
@@ -284,7 +287,7 @@ class MyWindow(Gtk.Window, threading.Thread):
         cType = cTypeModel[cTypeIter][0]
 
         # Build gs Command
-        self.cmmd = 'gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 -dPDFSETTINGS=/' + cType + ' -dNOPAUSE -dQUIET -dBATCH -sOutputFile=' + "\"" + oFile + "\"" + ' ' + "\"" +iFile + "\""
+        self.cmmd = 'gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 -dPDFSETTINGS=/' + cType + ' -dNOPAUSE -dQUIET -dBATCH -sOutputFile=' + "\"" + oFile + "\"" + ' ' + "\"" + iFile + "\""
 
         # Start Compressing
         q = queue.Queue()
@@ -300,9 +303,9 @@ class MyWindow(Gtk.Window, threading.Thread):
         success = q.get()
 
         # If try succeeds, tell user it succeeded, else, show an error dialog
-        if success == True:
+        if success:
             # Notify User
-            subprocess.run(["notify-send", "PDF Compressed!"])
+            subprocess.run(["notify-send", "PDF Konprimitua!"])
 
             # Get File Size
             iFileSizeRaw = os.path.getsize(iFile)
@@ -327,14 +330,15 @@ class MyWindow(Gtk.Window, threading.Thread):
             self.completed()
 
             # Show Completion Dialog - Try Completed
-            verbiage = "Your PDF File has been successfully compressed from " + str(iFileSize) + iUnit + " to " + str(oFileSize) + oUnit + "! Enjoy!"
-            self.info("PDF Compressed!", verbiage)
+            verbiage = "Zure PDF fitxategia ondo konprimitu da " + str(iFileSize) + iUnit + "-tik " + str(
+                oFileSize) + oUnit + "-ra!"
+            self.info("PDF Konprimititua!", verbiage)
 
         else:
             # Notify User
             subprocess.run(["notify-send", "ERROR!"])
             # Show Error Dialog - Exception
-            verbiage = "Something went wrong! Maybe your PDF file is corrupted?"
+            verbiage = "Zerbait gaizki atera zen! Agian zure PDF fitxategia hondatuta dago?"
             self.info("ERROR!", verbiage)
             # Set Progress Bar to Ready and Stop Pulsing
             self.ready()
@@ -343,7 +347,7 @@ class MyWindow(Gtk.Window, threading.Thread):
     def info(self, title, verbiage):
         # Show Info Dialog
         dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=Gtk.MessageType.INFO,
-            buttons=Gtk.ButtonsType.OK, text=title)
+                                   buttons=Gtk.ButtonsType.OK, text=title)
         dialog.format_secondary_text(verbiage)
         response = dialog.run()
         dialog.destroy()
@@ -356,7 +360,7 @@ class MyWindow(Gtk.Window, threading.Thread):
         self.pause()
         # Show Error Dialog
         dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=Gtk.MessageType.WARNING,
-            buttons=Gtk.ButtonsType.OK, text=title)
+                                   buttons=Gtk.ButtonsType.OK, text=title)
         dialog.format_secondary_text(verbiage)
         response = dialog.run()
         dialog.destroy()
@@ -369,7 +373,7 @@ class MyWindow(Gtk.Window, threading.Thread):
         self.pause()
         # Show Error Dialog
         dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=Gtk.MessageType.WARNING,
-            buttons=Gtk.ButtonsType.OK_CANCEL, text=title)
+                                   buttons=Gtk.ButtonsType.OK_CANCEL, text=title)
         dialog.format_secondary_text(verbiage)
         response = dialog.run()
         dialog.destroy()
@@ -381,7 +385,7 @@ class MyWindow(Gtk.Window, threading.Thread):
     # Set Progress Bar Text to "Compressing..." and Progress Bar to Pulse
     def progress(self):
         show_text = True
-        text = "Compressing..."
+        text = "Konprimitzen..."
         self.progressbar.set_text(text)
         self.progressbar.set_show_text(show_text)
         self.activity_mode = True
@@ -390,7 +394,7 @@ class MyWindow(Gtk.Window, threading.Thread):
     # Set Progress Bar Text to "Ready" and Progress Bar to Stop
     def ready(self):
         show_text = True
-        text = "Ready"
+        text = "Prest"
         self.progressbar.set_text(text)
         self.progressbar.set_show_text(show_text)
         self.activity_mode = False
@@ -401,7 +405,7 @@ class MyWindow(Gtk.Window, threading.Thread):
     # Set Progress Bar Text to "Puased" and Progress Bar to Stop
     def pause(self):
         show_text = True
-        text = "Paused"
+        text = "Gelgitua"
         self.progressbar.set_text(text)
         self.progressbar.set_show_text(show_text)
         self.activity_mode = False
@@ -410,7 +414,7 @@ class MyWindow(Gtk.Window, threading.Thread):
     # Set Progress Bar Text to "Compressing..." and Progress Bar to Resume
     def resume(self):
         show_text = True
-        text = "Compressing..."
+        text = "Konprimitzen..."
         self.progressbar.set_text(text)
         self.progressbar.set_show_text(show_text)
         self.activity_mode = True
@@ -419,7 +423,7 @@ class MyWindow(Gtk.Window, threading.Thread):
     # Set Progress Bar Text to "Completed" and Progress Bar to Stop
     def completed(self):
         show_text = True
-        text = "Completed"
+        text = "Amaituta"
         self.progressbar.set_text(text)
         self.progressbar.set_show_text(show_text)
         self.activity_mode = False
@@ -435,7 +439,7 @@ class MyWindow(Gtk.Window, threading.Thread):
             out_queue.put(True)
         except:
             if err == None:
-                print("There's an error with no trace data...")
+                print("Trazatu ezin den akats bat egon da...")
             else:
                 print(err)
             out_queue.put(False)
@@ -458,10 +462,11 @@ class MyWindow(Gtk.Window, threading.Thread):
         # continues to get called
         return True
 
+
 # Initiate Window
 win = MyWindow()
 win.start()
-win.set_icon_from_file(str(pathlib.Path(__file__).parent.absolute()) + "/icon.png") # Set App Icon
+win.set_icon_from_file(str(pathlib.Path(__file__).parent.absolute()) + "/icon.png")  # Set App Icon
 win.connect("destroy", Gtk.main_quit)
 win.show_all()
 Gtk.main()
